@@ -1,0 +1,1 @@
+# StegSafe tests package

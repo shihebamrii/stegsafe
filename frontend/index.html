@@ -1,0 +1,1223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StegSafe - Zero-Knowledge Steganography Portal</title>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --bg-color: #08090d;
+            --panel-bg: rgba(16, 20, 30, 0.7);
+            --border-color: rgba(0, 240, 255, 0.1);
+            --accent-glow: #00f0ff;
+            --accent-purple: #ab47bc;
+            --text-main: #f5f6f8;
+            --text-muted: #8b9bb4;
+            --success: #39ff14;
+            --danger: #ff3838;
+            --glass-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.6);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            background-image: 
+                radial-gradient(circle at 80% 20%, rgba(0, 240, 255, 0.08) 0%, transparent 45%),
+                radial-gradient(circle at 15% 85%, rgba(171, 71, 188, 0.08) 0%, transparent 45%);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem 1.5rem;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 720px;
+        }
+
+        .glass-card {
+            background: var(--panel-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--border-color);
+            border-radius: 24px;
+            box-shadow: var(--glass-shadow);
+            padding: 2.5rem;
+            transition: border-color 0.4s, box-shadow 0.4s;
+        }
+
+        .glass-card:hover {
+            border-color: rgba(0, 240, 255, 0.2);
+            box-shadow: 0 16px 48px 0 rgba(0, 240, 255, 0.05);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 2.5rem;
+        }
+
+        .header h1 {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #ffffff 0%, var(--accent-glow) 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.75rem;
+        }
+
+        .header p {
+            color: var(--text-muted);
+            margin-top: 0.5rem;
+            font-size: 0.95rem;
+            letter-spacing: 0.02em;
+        }
+
+        /* Tabs */
+        .tabs {
+            display: flex;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 14px;
+            padding: 0.35rem;
+            margin-bottom: 2rem;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .tab-btn {
+            flex: 1;
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            padding: 0.75rem 1rem;
+            font-size: 0.95rem;
+            font-weight: 500;
+            cursor: pointer;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .tab-btn:hover {
+            color: var(--text-main);
+        }
+
+        .tab-btn.active {
+            background: var(--accent-glow);
+            color: #000;
+            font-weight: 600;
+            box-shadow: 0 0 15px rgba(0, 240, 255, 0.3);
+        }
+
+        /* View Panels */
+        .view-panel {
+            display: none;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .view-panel.active {
+            display: flex;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.25rem;
+        }
+
+        label {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        /* Dropzones */
+        .dropzone {
+            border: 2px dashed rgba(0, 240, 255, 0.15);
+            border-radius: 16px;
+            padding: 2.2rem 1.5rem;
+            text-align: center;
+            cursor: pointer;
+            background: rgba(255, 255, 255, 0.01);
+            transition: all 0.3s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.75rem;
+            position: relative;
+        }
+
+        .dropzone:hover, .dropzone.dragover {
+            border-color: var(--accent-glow);
+            background: rgba(0, 240, 255, 0.02);
+            box-shadow: 0 0 20px rgba(0, 240, 255, 0.03) inset;
+        }
+
+        .dropzone i {
+            font-size: 2.2rem;
+            color: var(--text-muted);
+            transition: color 0.3s;
+        }
+
+        .dropzone:hover i {
+            color: var(--accent-glow);
+        }
+
+        .dropzone p {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        .dropzone input[type="file"] {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            cursor: pointer;
+        }
+
+        .img-preview {
+            max-width: 100%;
+            max-height: 180px;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            display: none;
+            margin-top: 0.5rem;
+        }
+
+        /* Inputs */
+        input[type="text"], input[type="password"], textarea, select {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 12px;
+            color: var(--text-main);
+            padding: 0.85rem 1rem;
+            font-size: 0.95rem;
+            outline: none;
+            transition: all 0.3s;
+        }
+
+        input[type="text"]:focus, input[type="password"]:focus, textarea:focus, select:focus {
+            border-color: var(--accent-glow);
+            background: rgba(255, 255, 255, 0.05);
+            box-shadow: 0 0 10px rgba(0, 240, 255, 0.1);
+        }
+
+        .password-wrapper {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .password-wrapper input {
+            padding-right: 2.8rem;
+        }
+
+        .toggle-password {
+            position: absolute;
+            right: 1rem;
+            bottom: 0.85rem;
+            cursor: pointer;
+            color: var(--text-muted);
+            font-size: 1.1rem;
+            transition: color 0.3s;
+        }
+
+        .toggle-password:hover {
+            color: var(--text-main);
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 110px;
+        }
+
+        /* Toggle Selection (Message vs File) */
+        .type-selector {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .type-option {
+            flex: 1;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 10px;
+            padding: 0.6rem;
+            text-align: center;
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: var(--text-muted);
+            transition: all 0.3s;
+        }
+
+        .type-option.active {
+            border-color: var(--accent-purple);
+            background: rgba(171, 71, 188, 0.1);
+            color: #f5f6f8;
+            box-shadow: 0 0 10px rgba(171, 71, 188, 0.15);
+        }
+
+        /* Action Buttons */
+        .action-btn {
+            background: linear-gradient(135deg, var(--accent-glow) 0%, var(--accent-purple) 100%);
+            border: none;
+            border-radius: 12px;
+            color: #000;
+            font-size: 1rem;
+            font-weight: 700;
+            padding: 1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.75rem;
+            margin-top: 1rem;
+        }
+
+        .action-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 0 25px rgba(0, 240, 255, 0.25);
+        }
+
+        .action-btn:active {
+            transform: translateY(0);
+        }
+
+        /* Logging & Loading states */
+        .status-box {
+            display: none;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 1rem;
+            font-family: monospace;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            flex-direction: column;
+            gap: 0.25rem;
+            max-height: 120px;
+            overflow-y: auto;
+        }
+
+        .status-line {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .status-line.success { color: var(--success); }
+        .status-line.error { color: var(--danger); }
+        .status-line.info { color: var(--accent-glow); }
+
+        /* Output Card (Sharing Overlay) */
+        .output-card {
+            display: none;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(0, 240, 255, 0.15);
+            border-radius: 16px;
+            padding: 1.5rem;
+            margin-top: 1.5rem;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .output-title {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--accent-glow);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .link-container {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .link-input {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: var(--text-main);
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            outline: none;
+            font-family: monospace;
+        }
+
+        .copy-btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: var(--text-main);
+            width: 44px;
+            height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .copy-btn:hover {
+            background: var(--accent-glow);
+            color: #000;
+            border-color: var(--accent-glow);
+        }
+
+        .warning-text {
+            font-size: 0.8rem;
+            color: #ff9800;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            line-height: 1.3;
+        }
+
+        /* Decrypt Result Panel */
+        .result-panel {
+            display: none;
+            flex-direction: column;
+            gap: 1rem;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 16px;
+            padding: 1.5rem;
+            margin-top: 1.5rem;
+        }
+
+        .result-header {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--success);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .result-content {
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            padding: 1rem;
+            max-height: 250px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            word-break: break-all;
+            font-family: monospace;
+            font-size: 0.9rem;
+        }
+
+        .download-file-btn {
+            background: var(--success);
+            border: none;
+            color: #000;
+            font-weight: 700;
+            padding: 0.85rem;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            text-decoration: none;
+        }
+
+        .download-file-btn:hover {
+            box-shadow: 0 0 15px rgba(57, 255, 20, 0.3);
+            transform: translateY(-1px);
+        }
+
+        .spinner {
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 580px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="glass-card">
+        <div class="header">
+            <h1><i class="fa-solid fa-user-secret"></i> StegSafe</h1>
+            <p>Zero-Knowledge LSB Steganography & Encrypted Link Drops</p>
+        </div>
+
+        <div class="tabs">
+            <button class="tab-btn active" onclick="switchTab('encode')">
+                <i class="fa-solid fa-lock"></i> Encode & Hide
+            </button>
+            <button class="tab-btn" onclick="switchTab('decode')">
+                <i class="fa-solid fa-unlock"></i> Extract & Decrypt
+            </button>
+        </div>
+
+        <!-- ==================== ENCODE VIEW ==================== -->
+        <div id="encode-panel" class="view-panel active">
+            <div class="form-group">
+                <label>Cover Image (PNG / JPG)</label>
+                <div class="dropzone" id="cover-dropzone">
+                    <i class="fa-regular fa-image"></i>
+                    <p>Drag cover image here or click to browse</p>
+                    <input type="file" id="cover-input" accept="image/png, image/jpeg">
+                    <img id="cover-preview" class="img-preview" alt="Cover Preview">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Secret Payload Type</label>
+                <div class="type-selector">
+                    <div class="type-option active" id="type-text-btn" onclick="setPayloadType('text')">
+                        <i class="fa-solid fa-align-left"></i> Text Message
+                    </div>
+                    <div class="type-option" id="type-file-btn" onclick="setPayloadType('file')">
+                        <i class="fa-solid fa-file-arrow-up"></i> File Uploader
+                    </div>
+                </div>
+            </div>
+
+            <!-- Text Payload Input -->
+            <div class="form-group" id="text-input-group">
+                <label for="secret-message">Secret Message</label>
+                <textarea id="secret-message" placeholder="Type the confidential message to embed..."></textarea>
+            </div>
+
+            <!-- File Payload Input -->
+            <div class="form-group" id="file-input-group" style="display: none;">
+                <label>Secret File</label>
+                <div class="dropzone" id="file-dropzone">
+                    <i class="fa-solid fa-file-shield"></i>
+                    <p id="file-dropzone-text">Drag secret file here or click to browse (Max ~100KB)</p>
+                    <input type="file" id="secret-file-input">
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group password-wrapper">
+                    <label for="encode-password">Encryption Key / Password</label>
+                    <div style="position: relative; display: flex;">
+                        <input type="password" id="encode-password" style="width: 100%;" placeholder="Passphrase to derive keys">
+                        <i class="fa-regular fa-eye toggle-password" onclick="togglePassVisibility('encode-password', this)"></i>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="share-mode">Delivery Option</label>
+                    <select id="share-mode" onchange="toggleExpirySelector()">
+                        <option value="download">Download locally (Stego-PNG)</option>
+                        <option value="upload">Upload & Generate Share Link</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-group" id="expiry-group" style="display: none;">
+                <label for="expiry-time">Share Link Lifespan</label>
+                <select id="expiry-time">
+                    <option value="5">5 Minutes</option>
+                    <option value="60">1 Hour</option>
+                    <option value="1440" selected>24 Hours</option>
+                </select>
+            </div>
+
+            <button class="action-btn" id="encode-btn" onclick="processEncode()">
+                <i class="fa-solid fa-circle-play"></i> Encrypt & Embed
+            </button>
+        </div>
+
+        <!-- ==================== DECODE VIEW ==================== -->
+        <div id="decode-panel" class="view-panel">
+            <div class="form-group">
+                <label>Stego Image (PNG Containing Secret)</label>
+                <div class="dropzone" id="stego-dropzone">
+                    <i class="fa-solid fa-qrcode"></i>
+                    <p id="stego-dropzone-text">Drag stego image here or click to browse</p>
+                    <input type="file" id="stego-input" accept="image/png">
+                    <img id="stego-preview" class="img-preview" alt="Stego Preview">
+                </div>
+            </div>
+
+            <div class="form-group password-wrapper">
+                <label for="decode-password">Decryption Key / Password</label>
+                <div style="position: relative; display: flex;">
+                    <input type="password" id="decode-password" style="width: 100%;" placeholder="Enter password used to encrypt">
+                    <i class="fa-regular fa-eye toggle-password" onclick="togglePassVisibility('decode-password', this)"></i>
+                </div>
+            </div>
+
+            <button class="action-btn" id="decode-btn" onclick="processDecode()">
+                <i class="fa-solid fa-key"></i> Extract & Decrypt
+            </button>
+        </div>
+
+        <!-- Progress Log Console -->
+        <div class="status-box" id="status-console"></div>
+
+        <!-- Result / Share Container (Used in Encoding flow) -->
+        <div class="output-card" id="sharing-result">
+            <div class="output-title">
+                <i class="fa-solid fa-share-nodes"></i> Link Generated
+            </div>
+            <div class="link-container">
+                <input type="text" class="link-input" id="share-link-out" readonly>
+                <button class="copy-btn" onclick="copyShareLink()"><i class="fa-regular fa-copy"></i></button>
+            </div>
+            <div class="warning-text">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+                <span>This link is <strong>one-time use (burn-on-read)</strong>. As soon as the recipient decrypts it, the image will be permanently erased from the server.</span>
+            </div>
+        </div>
+
+        <!-- Decrypted Result Panel (Used in Decoding flow) -->
+        <div class="result-panel" id="decrypted-result">
+            <div class="result-header">
+                <i class="fa-solid fa-circle-check"></i> Decrypted Successfully!
+            </div>
+            <div id="decrypted-text-view" style="display: none;">
+                <div class="result-content" id="decrypted-msg-content"></div>
+            </div>
+            <div id="decrypted-file-view" style="display: none; text-align: center; padding: 1rem 0;">
+                <i class="fa-solid fa-file-shield" style="font-size: 3rem; color: var(--success); margin-bottom: 1rem; display: block;"></i>
+                <div id="decrypted-filename" style="font-weight: 600; margin-bottom: 1rem;"></div>
+                <a id="decrypted-file-link" class="download-file-btn">
+                    <i class="fa-solid fa-download"></i> Save Extracted File
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    let payloadType = 'text';
+    let coverFileBytes = null;
+    let stegoFileBytes = null;
+    let selectedSecretFile = null;
+
+    // View initialization
+    document.addEventListener("DOMContentLoaded", () => {
+        setupFileListeners();
+        // Check if there is an ID in the URL to auto-load sharing link
+        handleUrlRouting();
+    });
+
+    function switchTab(tab) {
+        document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+        document.querySelectorAll('.view-panel').forEach(panel => panel.classList.remove('active'));
+        document.getElementById('sharing-result').style.display = 'none';
+        document.getElementById('decrypted-result').style.display = 'none';
+        document.getElementById('status-console').style.display = 'none';
+
+        if (tab === 'encode') {
+            event.currentTarget.classList.add('active');
+            document.getElementById('encode-panel').classList.add('active');
+        } else {
+            event.currentTarget.classList.add('active');
+            document.getElementById('decode-panel').classList.add('active');
+        }
+    }
+
+    function setPayloadType(type) {
+        payloadType = type;
+        document.getElementById('type-text-btn').classList.remove('active');
+        document.getElementById('type-file-btn').classList.remove('active');
+        
+        if (type === 'text') {
+            document.getElementById('type-text-btn').classList.add('active');
+            document.getElementById('text-input-group').style.display = 'flex';
+            document.getElementById('file-input-group').style.display = 'none';
+        } else {
+            document.getElementById('type-file-btn').classList.add('active');
+            document.getElementById('text-input-group').style.display = 'none';
+            document.getElementById('file-input-group').style.display = 'flex';
+        }
+    }
+
+    function togglePassVisibility(inputId, icon) {
+        const input = document.getElementById(inputId);
+        if (input.type === "password") {
+            input.type = "text";
+            icon.classList.replace("fa-eye", "fa-eye-slash");
+        } else {
+            input.type = "password";
+            icon.classList.replace("fa-eye-slash", "fa-eye");
+        }
+    }
+
+    function toggleExpirySelector() {
+        const val = document.getElementById('share-mode').value;
+        const expiry = document.getElementById('expiry-group');
+        expiry.style.display = val === 'upload' ? 'flex' : 'none';
+    }
+
+    // Status logger utility
+    function logStatus(text, type = 'info') {
+        const consoleEl = document.getElementById('status-console');
+        consoleEl.style.display = 'flex';
+        
+        const line = document.createElement('div');
+        line.className = `status-line ${type}`;
+        
+        const icon = document.createElement('i');
+        if (type === 'success') icon.className = 'fa-solid fa-check';
+        else if (type === 'error') icon.className = 'fa-solid fa-xmark';
+        else if (type === 'info') icon.className = 'fa-solid fa-spinner spinner';
+        else icon.className = 'fa-solid fa-chevron-right';
+        
+        const span = document.createElement('span');
+        span.textContent = text;
+        
+        line.appendChild(icon);
+        line.appendChild(span);
+        consoleEl.appendChild(line);
+        consoleEl.scrollTop = consoleEl.scrollHeight;
+    }
+
+    function clearStatus() {
+        document.getElementById('status-console').innerHTML = '';
+        document.getElementById('status-console').style.display = 'none';
+    }
+
+    // Handle Drag & Drop/Click file loading
+    function setupFileListeners() {
+        // Cover Image Dropzone
+        const coverDrop = document.getElementById('cover-dropzone');
+        const coverInput = document.getElementById('cover-input');
+        const coverPreview = document.getElementById('cover-preview');
+
+        coverDrop.addEventListener('dragover', (e) => { e.preventDefault(); coverDrop.classList.add('dragover'); });
+        coverDrop.addEventListener('dragleave', () => coverDrop.classList.remove('dragover'));
+        coverDrop.addEventListener('drop', (e) => {
+            e.preventDefault();
+            coverDrop.classList.remove('dragover');
+            if (e.dataTransfer.files.length) handleCoverLoad(e.dataTransfer.files[0]);
+        });
+        coverInput.addEventListener('change', () => {
+            if (coverInput.files.length) handleCoverLoad(coverInput.files[0]);
+        });
+
+        // Secret File Dropzone
+        const fileDrop = document.getElementById('file-dropzone');
+        const fileInput = document.getElementById('secret-file-input');
+        const fileText = document.getElementById('file-dropzone-text');
+
+        fileDrop.addEventListener('dragover', (e) => { e.preventDefault(); fileDrop.classList.add('dragover'); });
+        fileDrop.addEventListener('dragleave', () => fileDrop.classList.remove('dragover'));
+        fileDrop.addEventListener('drop', (e) => {
+            e.preventDefault();
+            fileDrop.classList.remove('dragover');
+            if (e.dataTransfer.files.length) handleSecretFileLoad(e.dataTransfer.files[0]);
+        });
+        fileInput.addEventListener('change', () => {
+            if (fileInput.files.length) handleSecretFileLoad(fileInput.files[0]);
+        });
+
+        // Stego Image Dropzone
+        const stegoDrop = document.getElementById('stego-dropzone');
+        const stegoInput = document.getElementById('stego-input');
+        const stegoPreview = document.getElementById('stego-preview');
+
+        stegoDrop.addEventListener('dragover', (e) => { e.preventDefault(); stegoDrop.classList.add('dragover'); });
+        stegoDrop.addEventListener('dragleave', () => stegoDrop.classList.remove('dragover'));
+        stegoDrop.addEventListener('drop', (e) => {
+            e.preventDefault();
+            stegoDrop.classList.remove('dragover');
+            if (e.dataTransfer.files.length) handleStegoLoad(e.dataTransfer.files[0]);
+        });
+        stegoInput.addEventListener('change', () => {
+            if (stegoInput.files.length) handleStegoLoad(stegoInput.files[0]);
+        });
+    }
+
+    function handleCoverLoad(file) {
+        if (!file.type.match('image/png') && !file.type.match('image/jpeg')) {
+            alert('Please select a valid PNG or JPEG image.');
+            return;
+        }
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            document.getElementById('cover-preview').src = e.target.result;
+            document.getElementById('cover-preview').style.display = 'block';
+            document.querySelector('#cover-dropzone i').style.display = 'none';
+            document.querySelector('#cover-dropzone p').textContent = file.name;
+        };
+        reader.readAsDataURL(file);
+    }
+
+    function handleSecretFileLoad(file) {
+        if (file.size > 200 * 1024) {
+            alert('File size exceeds the 200KB capacity threshold for typical LSB steganography.');
+            return;
+        }
+        selectedSecretFile = file;
+        document.getElementById('file-dropzone-text').innerHTML = `<i class="fa-solid fa-file-circle-check" style="color: var(--success); font-size: 1.2rem;"></i> <strong>${file.name}</strong> (${(file.size/1024).toFixed(1)} KB)`;
+    }
+
+    function handleStegoLoad(file) {
+        if (!file.type.match('image/png')) {
+            alert('Stego images must be PNG format (lossless) to preserve LSB pixels.');
+            return;
+        }
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            document.getElementById('stego-preview').src = e.target.result;
+            document.getElementById('stego-preview').style.display = 'block';
+            document.querySelector('#stego-dropzone i').style.display = 'none';
+            document.querySelector('#stego-dropzone-text').textContent = file.name;
+        };
+        reader.readAsDataURL(file);
+    }
+
+    // ==================== CRYPTOGRAPHIC UTILITIES ====================
+    async function deriveKey(password, salt) {
+        const enc = new TextEncoder();
+        const baseKey = await window.crypto.subtle.importKey(
+            "raw",
+            enc.encode(password),
+            "PBKDF2",
+            false,
+            ["deriveKey"]
+        );
+        return window.crypto.subtle.deriveKey(
+            {
+                name: "PBKDF2",
+                salt: salt,
+                iterations: 100000,
+                hash: "SHA-256"
+            },
+            baseKey,
+            { name: "AES-GCM", length: 256 },
+            false,
+            ["encrypt", "decrypt"]
+        );
+    }
+
+    async function encryptPayload(password, payloadBytes) {
+        const salt = window.crypto.getRandomValues(new Uint8Array(16));
+        const iv = window.crypto.getRandomValues(new Uint8Array(12));
+        
+        const key = await deriveKey(password, salt);
+        const ciphertext = await window.crypto.subtle.encrypt(
+            { name: "AES-GCM", iv: iv },
+            key,
+            payloadBytes
+        );
+        
+        const cipherArray = new Uint8Array(ciphertext);
+        const encryptedPackage = new Uint8Array(salt.length + iv.length + cipherArray.length);
+        encryptedPackage.set(salt, 0);
+        encryptedPackage.set(iv, salt.length);
+        encryptedPackage.set(cipherArray, salt.length + iv.length);
+        
+        return encryptedPackage;
+    }
+
+    async function decryptPayload(password, encryptedPackage) {
+        const salt = encryptedPackage.slice(0, 16);
+        const iv = encryptedPackage.slice(16, 28);
+        const ciphertext = encryptedPackage.slice(28);
+        
+        const key = await deriveKey(password, salt);
+        const plaintext = await window.crypto.subtle.decrypt(
+            { name: "AES-GCM", iv: iv },
+            key,
+            ciphertext
+        );
+        
+        return new Uint8Array(plaintext);
+    }
+
+    // ==================== STEGANOGRAPHY LSB ENGINE ====================
+    function embedData(imageData, payloadBytes) {
+        // Prepend length header: 32-bit (4 bytes) representing the size of payloadBytes
+        const totalBytes = new Uint8Array(4 + payloadBytes.length);
+        const view = new DataView(totalBytes.buffer);
+        view.setUint32(0, payloadBytes.length, false); // Big endian
+        totalBytes.set(payloadBytes, 4);
+        
+        // Convert total bytes to bitstream
+        const bits = [];
+        for (let i = 0; i < totalBytes.length; i++) {
+            for (let bit = 7; bit >= 0; bit--) {
+                bits.push((totalBytes[i] >> bit) & 1);
+            }
+        }
+        
+        const data = imageData.data;
+        // Capacity validation: R, G, B of each pixel can hold 1 bit
+        const capacity = (data.length / 4) * 3;
+        if (bits.length > capacity) {
+            throw new Error(`Data is too large (${(bits.length/8/1024).toFixed(1)}KB encrypted) for this image capacity (${(capacity/8/1024).toFixed(1)}KB). Select a larger cover image.`);
+        }
+        
+        let bitIndex = 0;
+        for (let i = 0; i < data.length; i += 4) {
+            for (let channel = 0; channel < 3; channel++) { // R, G, B
+                if (bitIndex >= bits.length) return;
+                // Replace LSB
+                data[i + channel] = (data[i + channel] & 0xFE) | bits[bitIndex];
+                bitIndex++;
+            }
+        }
+    }
+
+    function extractData(imageData) {
+        const data = imageData.data;
+        
+        // Read first 32 bits for length
+        const lengthBits = [];
+        let bitIndex = 0;
+        for (let i = 0; i < data.length && bitIndex < 32; i += 4) {
+            for (let channel = 0; channel < 3 && bitIndex < 32; channel++) {
+                lengthBits.push(data[i + channel] & 1);
+                bitIndex++;
+            }
+        }
+        
+        if (lengthBits.length < 32) throw new Error("Image has no embedded data.");
+        
+        let payloadLength = 0;
+        for (let i = 0; i < 32; i++) {
+            payloadLength = (payloadLength << 1) | lengthBits[i];
+        }
+        
+        const maxLimit = ((data.length / 4) * 3) / 8 - 4;
+        if (payloadLength <= 0 || payloadLength > maxLimit) {
+            throw new Error("No steganography data detected, or data is corrupt.");
+        }
+        
+        // Read full payload
+        const totalBitsNeeded = 32 + payloadLength * 8;
+        const allBits = [];
+        bitIndex = 0;
+        for (let i = 0; i < data.length && bitIndex < totalBitsNeeded; i += 4) {
+            for (let channel = 0; channel < 3 && bitIndex < totalBitsNeeded; channel++) {
+                allBits.push(data[i + channel] & 1);
+                bitIndex++;
+            }
+        }
+        
+        if (allBits.length < totalBitsNeeded) throw new Error("Truncated stego-data.");
+        
+        const payloadBytes = new Uint8Array(payloadLength);
+        for (let i = 0; i < payloadLength; i++) {
+            let byteVal = 0;
+            for (let b = 0; b < 8; b++) {
+                byteVal = (byteVal << 1) | allBits[32 + i * 8 + b];
+            }
+            payloadBytes[i] = byteVal;
+        }
+        
+        return payloadBytes;
+    }
+
+    // ==================== CONTROLLER FUNCTIONS ====================
+    async function processEncode() {
+        clearStatus();
+        document.getElementById('sharing-result').style.display = 'none';
+
+        const coverImgEl = document.getElementById('cover-preview');
+        const password = document.getElementById('encode-password').value;
+        const shareMode = document.getElementById('share-mode').value;
+
+        if (!coverImgEl.src || coverImgEl.style.display === 'none') {
+            alert('Please select a cover image first.');
+            return;
+        }
+        if (!password) {
+            alert('Please enter a password/key for encryption.');
+            return;
+        }
+
+        let plainBytes = null;
+        if (payloadType === 'text') {
+            const message = document.getElementById('secret-message').value;
+            if (!message) {
+                alert('Please enter a secret message.');
+                return;
+            }
+            const msgBytes = new TextEncoder().encode(message);
+            plainBytes = new Uint8Array(1 + msgBytes.length);
+            plainBytes[0] = 0x00; // Type identifier: text
+            plainBytes.set(msgBytes, 1);
+        } else {
+            if (!selectedSecretFile) {
+                alert('Please select a file to embed.');
+                return;
+            }
+            const fileBuffer = await selectedSecretFile.arrayBuffer();
+            const fileData = new Uint8Array(fileBuffer);
+            const filenameBytes = new TextEncoder().encode(selectedSecretFile.name);
+            
+            if (filenameBytes.length > 255) {
+                alert('Filename is too long.');
+                return;
+            }
+            
+            plainBytes = new Uint8Array(1 + 1 + filenameBytes.length + fileData.length);
+            plainBytes[0] = 0x01; // Type identifier: file
+            plainBytes[1] = filenameBytes.length;
+            plainBytes.set(filenameBytes, 2);
+            plainBytes.set(fileData, 2 + filenameBytes.length);
+        }
+
+        try {
+            logStatus("Deriving encryption keys using PBKDF2...");
+            // Derivation delay emulation for visual pacing
+            await new Promise(r => setTimeout(r, 400));
+            
+            logStatus("Encrypting payload bytes with AES-256-GCM...");
+            const encryptedPackage = await encryptPayload(password, plainBytes);
+            
+            logStatus("Loading cover image canvas context...");
+            const img = new Image();
+            img.src = coverImgEl.src;
+            await new Promise((resolve) => { img.onload = resolve; });
+            
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            canvas.width = img.naturalWidth;
+            canvas.height = img.naturalHeight;
+            ctx.drawImage(img, 0, 0);
+            
+            const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            
+            logStatus("Injecting bitstream into LSB pixels...");
+            embedData(imgData, encryptedPackage);
+            ctx.putImageData(imgData, 0, 0);
+            
+            // Export lossless PNG blob
+            logStatus("Assembling lossless PNG output...");
+            const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
+            
+            if (shareMode === 'download') {
+                logStatus("Triggering file download save prompt.", "success");
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `steg_${Date.now()}.png`;
+                a.click();
+                URL.revokeObjectURL(url);
+            } else {
+                logStatus("Uploading encrypted stego-image to VPS portal...", "info");
+                
+                const formData = new FormData();
+                formData.append("image", blob, "stego.png");
+                formData.append("expiry", document.getElementById("expiry-time").value);
+                
+                const response = await fetch("/api/upload", {
+                    method: "POST",
+                    body: formData
+                });
+                
+                if (!response.ok) {
+                    const errText = await response.text();
+                    throw new Error(`Upload failed: ${response.status} - ${errText}`);
+                }
+                
+                const resData = await response.json();
+                const imageId = resData.id;
+                
+                logStatus("Stego payload deployed successfully!", "success");
+                
+                // Construct hash anchor sharing link
+                const shareLink = `${window.location.origin}/view/${imageId}#${encodeURIComponent(password)}`;
+                document.getElementById('share-link-out').value = shareLink;
+                document.getElementById('sharing-result').style.display = 'flex';
+            }
+        } catch (e) {
+            logStatus(`Process failed: ${e.message}`, "error");
+            console.error(e);
+        }
+    }
+
+    async function processDecode() {
+        clearStatus();
+        document.getElementById('decrypted-result').style.display = 'none';
+
+        const stegoImgEl = document.getElementById('stego-preview');
+        const password = document.getElementById('decode-password').value;
+
+        if (!stegoImgEl.src || stegoImgEl.style.display === 'none') {
+            alert('Please load a stego PNG image.');
+            return;
+        }
+        if (!password) {
+            alert('Decryption password is required.');
+            return;
+        }
+
+        try {
+            logStatus("Reading stego-image pixels into memory...");
+            const img = new Image();
+            img.src = stegoImgEl.src;
+            await new Promise((resolve) => { img.onload = resolve; });
+            
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            canvas.width = img.naturalWidth;
+            canvas.height = img.naturalHeight;
+            ctx.drawImage(img, 0, 0);
+            
+            const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            
+            logStatus("Parsing embedded LSB headers...");
+            const encryptedPackage = extractData(imgData);
+            
+            logStatus("Deriving cryptographic key from password...");
+            await new Promise(r => setTimeout(r, 400));
+            
+            logStatus("Decrypting cipher blocks (AES-GCM authenticated)...");
+            const decryptedBytes = await decryptPayload(password, encryptedPackage);
+            
+            logStatus("Parsing plaintext payload signature...", "success");
+            
+            const type = decryptedBytes[0];
+            if (type === 0x00) {
+                // Text Message
+                const msg = new TextDecoder().decode(decryptedBytes.slice(1));
+                document.getElementById('decrypted-msg-content').textContent = msg;
+                document.getElementById('decrypted-text-view').style.display = 'block';
+                document.getElementById('decrypted-file-view').style.display = 'none';
+            } else if (type === 0x01) {
+                // File Uploader
+                const filenameLen = decryptedBytes[1];
+                const filename = new TextDecoder().decode(decryptedBytes.slice(2, 2 + filenameLen));
+                const fileData = decryptedBytes.slice(2 + filenameLen);
+                
+                document.getElementById('decrypted-filename').textContent = `${filename} (${(fileData.length/1024).toFixed(1)} KB)`;
+                
+                // Create download link
+                const fileBlob = new Blob([fileData], { type: "application/octet-stream" });
+                const fileUrl = URL.createObjectURL(fileBlob);
+                const dlBtn = document.getElementById('decrypted-file-link');
+                dlBtn.href = fileUrl;
+                dlBtn.download = filename;
+                
+                document.getElementById('decrypted-text-view').style.display = 'none';
+                document.getElementById('decrypted-file-view').style.display = 'block';
+            } else {
+                throw new Error("Invalid payload type identifier. The data is corrupt or password is wrong.");
+            }
+            
+            document.getElementById('decrypted-result').style.display = 'flex';
+        } catch (e) {
+            logStatus(`Decryption failed: Incorrect key/passphrase or corrupted stego image.`, "error");
+            console.error(e);
+        }
+    }
+
+    // ==================== URL ROUTING AND BURN ON READ ====================
+    async function handleUrlRouting() {
+        const path = window.location.pathname;
+        if (!path.startsWith('/view/')) return;
+        
+        const imageId = path.split('/view/')[1];
+        if (!imageId) return;
+        
+        // Switch tab to decode
+        switchTab('decode');
+        
+        // Check hash anchor for password
+        let password = "";
+        if (window.location.hash) {
+            password = decodeURIComponent(window.location.hash.substring(1));
+            document.getElementById('decode-password').value = password;
+        }
+        
+        logStatus(`Sharing drop detected. Fetching stego-blob [${imageId}] from server...`, "info");
+        
+        try {
+            const response = await fetch(`/api/image/${imageId}`);
+            if (!response.ok) {
+                if (response.status === 404) {
+                    throw new Error("This drop has expired or was already read & burned from the server.");
+                }
+                throw new Error(`Server returned HTTP ${response.status}`);
+            }
+            
+            const imageBlob = await response.blob();
+            const reader = new FileReader();
+            
+            reader.onload = async (e) => {
+                document.getElementById('stego-preview').src = e.target.result;
+                document.getElementById('stego-preview').style.display = 'block';
+                document.querySelector('#stego-dropzone i').style.display = 'none';
+                document.querySelector('#stego-dropzone-text').textContent = `Remote-Drop-${imageId}.png`;
+                
+                logStatus("Stego-image retrieved and cached in RAM. Server record destroyed.", "success");
+                
+                if (password) {
+                    logStatus("Auto-passphrase detected in URL hash. Attempting decryption...");
+                    await processDecode();
+                } else {
+                    logStatus("Drop loaded. Enter password to decrypt.");
+                }
+            };
+            
+            reader.readAsDataURL(imageBlob);
+        } catch (e) {
+            logStatus(e.message, "error");
+        }
+    }
+
+    function copyShareLink() {
+        const input = document.getElementById('share-link-out');
+        input.select();
+        document.execCommand('copy');
+        
+        const copyIcon = document.querySelector('.copy-btn i');
+        copyIcon.className = "fa-solid fa-check";
+        copyIcon.style.color = "var(--success)";
+        
+        setTimeout(() => {
+            copyIcon.className = "fa-regular fa-copy";
+            copyIcon.style.color = "";
+        }, 1500);
+    }
+</script>
+</body>
+</html>
