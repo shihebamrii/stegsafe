@@ -2,6 +2,8 @@
 
 A secure, zero-knowledge web-based steganography utility. It allows users to encrypt and embed confidential messages or files inside cover PNG images entirely client-side using the browser's native **Web Crypto API (AES-256-GCM)** and **Least Significant Bit (LSB)** canvas packing.
 
+🔗 **Live Demo:** [https://stegsafe.vercel.app](https://stegsafe.vercel.app)
+
 Users can save these images locally or drop them onto the portal to generate a self-destructing, one-time viewing link (burn-on-read).
 
 ---
